@@ -6,8 +6,14 @@ const { initializeDatabase } = require('./db/db.connect');
 const { Student } = require('./models/students.model');
 const { Teacher } = require('./models/teachers.model');
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
+const corsOptions = {
+  origin: '*',
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 initializeDatabase();
 
