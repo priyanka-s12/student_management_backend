@@ -4,6 +4,7 @@ const app = express();
 
 const { initializeDatabase } = require('./db/db.connect');
 const { Student } = require('./models/students.model');
+const { Teacher } = require('./models/teachers.model');
 
 app.use(cors());
 app.use(express.json());
@@ -78,9 +79,90 @@ app.delete('/students/:id', async (req, res) => {
   }
 });
 
+//teachers
+app.get('/teachers', async (req, res) => {
+  try {
+    const teachers = await Teacher.find();
+    res.json(teachers);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/teachers/:id', async (req, res) => {
+  const teacherId = req.params.id;
+  try {
+    const findTeacher = await Teacher.findOne({ _id: teacherId });
+    if (!findTeacher) {
+      res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    res.status(200).json(findTeacher);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/teachers', async (req, res) => {
+  const { name, age, gender, qualification, yearOfExperience } = req.body;
+  try {
+    const teacher = new Teacher({
+      name,
+      age,
+      gender,
+      qualification,
+      yearOfExperience,
+    });
+    const savedTeacher = await teacher.save();
+    res.status(201).json(savedTeacher);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/teachers/:id', async (req, res) => {
+  const teacherId = req.params.id;
+  const dataToUpdate = req.body;
+
+  try {
+    const updatedTeacher = await Teacher.findByIdAndUpdate(
+      teacherId,
+      dataToUpdate,
+      { new: true }
+    );
+
+    if (!updatedTeacher) {
+      res.status(404).json({ error: 'Student not found.' });
+    }
+
+    res.status(200).json(updatedTeacher);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server error' });
+  }
+});
+
+app.delete('/teachers/:id', async (req, res) => {
+  const teacherId = req.params.id;
+  try {
+    const deletedTeacher = await Teacher.findByIdAndDelete(teacherId);
+
+    if (!deletedTeacher) {
+      res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    res.status(200).json({
+      message: 'Teacher deleted successfully',
+      teacher: deletedTeacher,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-// teachers
